@@ -1,0 +1,27 @@
+{
+    "name": "@wocker/ngrok-plugin",
+    "version": "1.0.0",
+    "author": "Kris Papercut<krispcut@gmail.com>",
+    "description": "Ngrok plugin for wocker",
+    "license": "MIT",
+    "keywords": [
+        "wocker"
+    ],
+    "main": "./lib/index.js",
+    "types": "lib/index.d.ts",
+    "homepage": "https://kearisp.github.io/wocker/plugins/ngrok",
+    "scripts": {
+        "prepare": "npm run build",
+        "watch": "tsc -w",
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@wocker/core": "^1.0.10",
+        "@wocker/utils": "^1.0.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.7",
+        "typescript": "^5.4.4"
+    }
+}
