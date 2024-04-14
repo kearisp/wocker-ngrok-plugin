@@ -184,7 +184,7 @@ export class NgrokService {
         const res: string = await new Promise((resolve, reject) => {
             let res = "";
 
-            stream.on("data", (data) => {
+            stream.on("data", (data: Buffer) => {
                 res += demuxOutput(data).toString();
             });
 
