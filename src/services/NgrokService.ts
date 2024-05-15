@@ -50,50 +50,12 @@ export class NgrokService {
         await project.save();
     }
 
-    public async start(name?: string, restart?: boolean, attach?: boolean): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
+    public async start(project: Project, restart?: boolean, attach?: boolean): Promise<void> {
+        console.info("Starting ngrok...");
 
         if(restart) {
             await this.dockerService.removeContainer(this.getContainerName(project));
         }
-
-        await this.onStart(project);
-
-        if(attach) {
-            await this.dockerService.attach(this.getContainerName(project));
-        }
-    }
-
-    public async stop(name?: string): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
-
-        await this.onStop(project);
-    }
-
-    public async attach(name?: string): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
-
-        await this.dockerService.attach(this.getContainerName(project));
-    }
-
-    public async onStart(project: Project): Promise<void> {
-        if(!project || !project.getMeta(ENABLE_KEY, false)) {
-            return;
-        }
-
-        console.info("Starting ngrok...");
 
         let container = await this.dockerService.getContainer(this.getContainerName(project));
 
@@ -149,16 +111,42 @@ export class NgrokService {
                 stream.on("error", reject);
             });
         }
+
+        if(attach) {
+            await this.dockerService.attach(this.getContainerName(project));
+        }
     }
 
-    public async onStop(project: Project): Promise<void> {
-        if(!project || !project.getMeta(ENABLE_KEY, false)) {
-            return;
-        }
-
+    public async stop(project: Project): Promise<void> {
         console.info("Stopping ngrok...");
 
         await this.dockerService.removeContainer(this.getContainerName(project));
+    }
+
+    public async attach(name?: string): Promise<void> {
+        if(name) {
+            await this.projectService.cdProject(name);
+        }
+
+        const project = await this.projectService.get();
+
+        await this.dockerService.attach(this.getContainerName(project));
+    }
+
+    public async onStart(project: Project): Promise<void> {
+        if(!project || project.getMeta(ENABLE_KEY, false)) {
+            return;
+        }
+
+        await this.start(project);
+    }
+
+    public async onStop(project: Project): Promise<void> {
+        if(!project || project.getMeta(ENABLE_KEY, false)) {
+            return;
+        }
+
+        await this.stop(project);
     }
 
     public async getForwarding(project: Project) {
