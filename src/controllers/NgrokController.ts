@@ -3,6 +3,7 @@ import {
     Command,
     Option,
     AppEventsService,
+    ProjectService,
     Project
 } from "@wocker/core";
 
@@ -13,6 +14,7 @@ import {NgrokService} from "../services/NgrokService";
 export class NgrokController {
     public constructor(
         protected readonly appEventsService: AppEventsService,
+        protected readonly projectService: ProjectService,
         protected readonly ngrokService: NgrokService
     ) {
         this.appEventsService.on("project:start", (project: Project) => {
@@ -31,7 +33,7 @@ export class NgrokController {
             alias: "n"
         })
         name?: string
-    ) {
+    ): Promise<void> {
         await this.ngrokService.init(name);
     }
 
@@ -47,8 +49,14 @@ export class NgrokController {
             alias: "r"
         })
         restart?: boolean
-    ) {
-        await this.ngrokService.start(name, restart);
+    ): Promise<void> {
+        if(name) {
+            await this.projectService.cdProject(name);
+        }
+
+        const project = await this.projectService.get();
+
+        await this.ngrokService.start(project, restart);
     }
 
     @Command("ngrok:stop")
@@ -58,8 +66,14 @@ export class NgrokController {
             alias: "n"
         })
         name?: string
-    ) {
-        await this.ngrokService.stop(name);
+    ): Promise<void> {
+        if(name) {
+            await this.projectService.cdProject(name);
+        }
+
+        const project = await this.projectService.get();
+
+        await this.ngrokService.stop(project);
     }
 
     @Command("ngrok:attach")

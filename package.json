@@ -1,6 +1,6 @@
 {
     "name": "@wocker/ngrok-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Kris Papercut<krispcut@gmail.com>",
     "description": "Ngrok plugin for wocker",
     "license": "MIT",

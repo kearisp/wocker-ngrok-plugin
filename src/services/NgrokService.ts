@@ -8,12 +8,11 @@ import {
 } from "@wocker/core";
 import {promptConfirm, promptText, demuxOutput} from "@wocker/utils";
 
+import {ENABLE_KEY, TOKEN_KEY} from "../env";
+
 
 @Injectable()
 export class NgrokService {
-    protected ENABLE_KEY = "NGROK_ENABLE";
-    protected TOKEN_KEY = "NGROK_AUTHTOKEN";
-
     public constructor(
         protected readonly appConfigService: AppConfigService,
         protected readonly projectService: ProjectService,
@@ -34,67 +33,29 @@ export class NgrokService {
 
         const enable = await promptConfirm({
             message: "Enable ngrok?",
-            default: project.getMeta(this.ENABLE_KEY, false)
+            default: project.getMeta(ENABLE_KEY, false)
         });
 
-        project.setMeta(this.ENABLE_KEY, enable);
+        project.setMeta(ENABLE_KEY, enable);
 
         if(enable) {
             const token = await promptText({
                 message: "Auth token:",
-                default: project.getMeta(this.TOKEN_KEY, "")
+                default: project.getMeta(TOKEN_KEY, "")
             });
 
-            project.setMeta(this.TOKEN_KEY, token);
+            project.setMeta(TOKEN_KEY, token);
         }
 
         await project.save();
     }
 
-    public async start(name?: string, restart?: boolean, attach?: boolean): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
+    public async start(project: Project, restart?: boolean, attach?: boolean): Promise<void> {
+        console.info("Starting ngrok...");
 
         if(restart) {
             await this.dockerService.removeContainer(this.getContainerName(project));
         }
-
-        await this.onStart(project);
-
-        if(attach) {
-            await this.dockerService.attach(this.getContainerName(project));
-        }
-    }
-
-    public async stop(name?: string): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
-
-        await this.onStop(project);
-    }
-
-    public async attach(name?: string): Promise<void> {
-        if(name) {
-            await this.projectService.cdProject(name);
-        }
-
-        const project = await this.projectService.get();
-
-        await this.dockerService.attach(this.getContainerName(project));
-    }
-
-    public async onStart(project: Project): Promise<void> {
-        if(!project || !project.getMeta(this.ENABLE_KEY, false)) {
-            return;
-        }
-
-        console.info("Starting ngrok...");
 
         let container = await this.dockerService.getContainer(this.getContainerName(project));
 
@@ -107,7 +68,7 @@ export class NgrokService {
                 tty: true,
                 restart: "always",
                 env: {
-                    NGROK_AUTHTOKEN: project.getMeta(this.TOKEN_KEY)
+                    NGROK_AUTHTOKEN: project.getMeta(TOKEN_KEY)
                 },
                 cmd: ["http", `${project.name}.workspace:80`]
             });
@@ -150,16 +111,42 @@ export class NgrokService {
                 stream.on("error", reject);
             });
         }
+
+        if(attach) {
+            await this.dockerService.attach(this.getContainerName(project));
+        }
     }
 
-    public async onStop(project: Project): Promise<void> {
-        if(!project) {
-            return;
-        }
-
+    public async stop(project: Project): Promise<void> {
         console.info("Stopping ngrok...");
 
         await this.dockerService.removeContainer(this.getContainerName(project));
+    }
+
+    public async attach(name?: string): Promise<void> {
+        if(name) {
+            await this.projectService.cdProject(name);
+        }
+
+        const project = await this.projectService.get();
+
+        await this.dockerService.attach(this.getContainerName(project));
+    }
+
+    public async onStart(project: Project): Promise<void> {
+        if(!project || project.getMeta(ENABLE_KEY, false)) {
+            return;
+        }
+
+        await this.start(project);
+    }
+
+    public async onStop(project: Project): Promise<void> {
+        if(!project || project.getMeta(ENABLE_KEY, false)) {
+            return;
+        }
+
+        await this.stop(project);
     }
 
     public async getForwarding(project: Project) {
