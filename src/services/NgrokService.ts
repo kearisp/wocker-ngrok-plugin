@@ -33,7 +33,7 @@ export class NgrokService {
 
         const enable = await promptConfirm({
             message: "Enable ngrok?",
-            default: project.getMeta(ENABLE_KEY, false)
+            default: project.getMeta(ENABLE_KEY, "false") as string === "true"
         });
 
         project.setMeta(ENABLE_KEY, enable);
@@ -134,7 +134,7 @@ export class NgrokService {
     }
 
     public async onStart(project: Project): Promise<void> {
-        if(!project || project.getMeta(ENABLE_KEY, false)) {
+        if(!project || project.getMeta(ENABLE_KEY, "false") as string === "false") {
             return;
         }
 
@@ -142,7 +142,7 @@ export class NgrokService {
     }
 
     public async onStop(project: Project): Promise<void> {
-        if(!project || project.getMeta(ENABLE_KEY, false)) {
+        if(!project || project.getMeta(ENABLE_KEY, "false") as string === "false") {
             return;
         }
 
