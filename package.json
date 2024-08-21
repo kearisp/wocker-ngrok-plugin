@@ -1,6 +1,6 @@
 {
     "name": "@wocker/ngrok-plugin",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "author": "Kris Papercut<krispcut@gmail.com>",
     "description": "Ngrok plugin for wocker",
     "license": "MIT",
@@ -17,11 +17,11 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@wocker/core": "^1.0.11",
-        "@wocker/utils": "^1.0.4"
+        "@wocker/core": "^1.0.12",
+        "@wocker/utils": "^1.0.5"
     },
     "devDependencies": {
         "@types/node": "^20.12.7",
-        "typescript": "^5.4.4"
+        "typescript": "^5.5.4"
     }
 }
